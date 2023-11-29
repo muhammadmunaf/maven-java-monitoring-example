@@ -42,7 +42,7 @@ jobs:
                   context: .
                   file: ./Dockerfile
                   push: true
-                  tags: maven-java-app/maven-java-app:latest
+                  tags: munafhassan23/maven-java-app:latest
 
     deploy:
         needs: build-and-push-docker

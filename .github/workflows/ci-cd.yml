@@ -1,0 +1,52 @@
+name: Maven Java CI/CD Workflow
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v3
+              with:
+                  java-version: "17"
+                  distribution: "temurin"
+
+            - name: Build with Maven
+              run: mvn clean package
+
+            - name: Run tests
+              run: mvn test
+
+    build-and-push-docker:
+        needs: build-and-test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v3
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  push: true
+                  tags: maven-java-app/maven-java-app:latest
+
+    deploy:
+        needs: build-and-push-docker
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy to Server
+              run: echo "Deploying the Java application now"
